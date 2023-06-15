@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        width: 100%;
+        height: 100vh;
+      }
+      .card {
+        width: 310.4px;
+        height: 434.4px;
+        float: left;
+        margin: 22px;
+        /* 設定子元素在 3D 空間內 */
+        transform-style: preserve-3d;
+        transition: transform 1s;
+        transform: scale(1.15);
+      }
+      .card-front {
+        width: 100%;
+        height: 100%;
+        background-image: url(./實驗體照/1.gif);
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: absolute;
+        /* 隱藏背面 */
+        backface-visibility: hidden;
+      }
+      .card-back {
+        width: 100%;
+        height: 100%;
+        background-image: url(./實驗體照/BK.gif);
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: absolute;
+        backface-visibility: hidden;
+        transform: rotateY(180deg);
+      }
+      .card-close {
+        transform: rotateY(180deg);
+      }
+      #game {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        background: url(./實驗體照/BGG.gif);
+        background-size: cover;
+        background-repeat: no-repeat;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+    <script src="./jquery-3.6.4.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.3/sweetalert2.all.min.js"
+      integrity="sha512-/iBgV43zPirSC0tue+PT/1VHGs7En24twBmT+sVMgn9PTaOpKfbgIyL5YsGKlbAIxcwz9S8W/YEnYjpIYj2Axw=="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      // 產生 16 張卡片
+      for (let i = 0; i < 16; i++) {
+        $("#game").append(`
+        <div class="card card-close">
+          <div class="card-front"></div>
+          <div class="card-back"></div>
+        </div>
+      `);
+      }
+      // 決定每張的數字
+      for (let i = 0; i < 16; i++) {
+        const num = (i % 8) + 1;
+        $(".card")
+          .eq(i)
+          .find(".card-front")
+          .css("background-image", `url(./實驗體照/${num}.gif)`);
+        $(".card").eq(i).attr("data-card", num);
+      }
+      // 打亂
+      for (let i = 0; i < 16; i++) {
+        const target = Math.round(Math.random() * 15);
+        $(".card").eq(target).insertAfter($(".card").eq(i));
+      }
+      $("#game").on("click", ".card", function () {
+        if (
+          // 如果還沒翻開兩張
+          $(".card:not(.card-close)").length < 2 &&
+          // 且這張牌還沒翻開
+          $(this).hasClass("card-close") &&
+          // 且這張牌還沒配對
+          !$(this).hasClass("card-ok")
+        ) {
+          // 符合才翻開
+          $(this).removeClass("card-close");
+        }
+
+        // 如果翻開兩張了
+        if ($(".card:not(.card-close)").length === 2) {
+          // 檢查數字
+          if (
+            $(".card:not(.card-close)").eq(0).attr("data-card") ===
+            $(".card:not(.card-close)").eq(1).attr("data-card")
+          ) {
+            $(".card:not(.card-close)").addClass("card-ok");
+            $(".card:not(.card-close)").fadeTo(1000, 0);
+          }
+
+          // 不管數字是否一樣都翻回來
+          setTimeout(function () {
+            $(".card:not(.card-close)").addClass("card-close");
+            if ($(".card-ok").length === $(".card").length) {
+              Swal.fire({
+                icon: "success",
+                title: "恭喜",
+                text: "恭喜過關",
+              });
+            }
+          }, 1000);
+        }
+      });
+    </script>
+  </body>
+</html>
